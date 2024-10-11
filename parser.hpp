@@ -41,6 +41,9 @@ private:
   bool StmtListPrime();
   bool Statement();
   bool Expression();
+  bool VarDecl();
+  bool IfStmt();
+  bool ForStmt();
 };
 
 #endif // PARSER_HPP
