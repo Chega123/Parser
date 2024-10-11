@@ -1,168 +1,198 @@
-#include <iostream>
-#include <string>
-using namespace std;
+#include "Parser.hpp"
 
-struct token {
-    string name;
-    token(string nam) { name = nam; }
-};
-
-token NextWord() {
-    return tokens[current_token++];
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {
 }
-token tokens[];
-int current_token = 0;  
-token word;
 
+bool Parser::parse() {
+  return Program();
+}
 
-/*Type' -> [ ] Type'
-Type' -> ''
+Token Parser::currToken() {
+  return tokens[current];
+}
+
+Token Parser::nextToken() {
+  return tokens[current++];
+}
+
+/*
+  Type' -> [ ] Type'
+  Type' -> ε
 */
-bool TypePrime() {
-    if (word.name == "Token_[") {
-        word = NextWord();
-        if (word.name == "Token_]") {
-            word = NextWord();
-            if (TypePrime()) {
-                return true;
-            }
-        }
+bool Parser::TypePrime() {
+  if (currToken().name == "Token_[") {
+    nextToken();
+    if (currToken().name == "Token_]") {
+      nextToken();
+      return TypePrime();
     }
+  }
+  return true;
+}
+
+/*
+  BasicType -> IntType
+  BasicType -> BoolType
+  BasicType -> CharType
+  BasicType -> StringType
+  BasicType -> VoidType
+*/
+bool Parser::BasicType() {
+  if (currToken().name == "IntType" || currToken().name == "BoolType" || 
+      currToken().name == "CharType" || currToken().name == "StringType" || 
+      currToken().name == "VoidType") {
+    nextToken();
     return true;
+  }
+  return false;
 }
 
-/*BasicType -> IntType
-BasicType -> BoolType
-BasicType -> CharType
-BasicType -> StringType
-BasicType -> VoidType
+/*
+  Type->BasicType Type'
 */
-bool BasicType() {
+bool Parser::Type() {
+  return BasicType() && TypePrime();
+}
 
-    if (word.name == "IntType"|| word.name == "IntType"|| word.name == "BoolType"|| word.name == "CharType"|| word.name == "StringType"|| word.name == "VoidType") {
+/*
+  Function -> Type Identifier (Params) { StmtList }
+*/
+bool Parser::Function() {
+  if (Type()) {
+    if (currToken().name == "Token_ID") {
+      nextToken();
+      if (currToken().name == "Token_(") {
+        nextToken();
+        if (Params()) {
+          if (currToken().name == "Token_)") {
+            nextToken();
+            return CompoundStmt();
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/*
+  VarDecl' -> ;
+  VarDecl' -> = Expression ;
+*/
+bool Parser::VarDeclPrime() {
+  if (currToken().name == "Token_;") {
+    nextToken();
+    return true;
+  }
+  else if (currToken().name == "Token_=") {
+    nextToken();
+    if (Expression()) {
+      if (currToken().name == "Token_;") {
+        nextToken();
         return true;
+      }
     }
-    return false;
+  }
+  return false;
 }
 
-/*Type->BasicType Type'*/
-
-bool Type() {
-    if (BasicType()) {
-        if (TypePrime()) {
-            return true;
-        }
-    }
-}
-bool params() {}
-bool StmtList() {}
-
-/*Function -> Type Identifier (Params) { StmtList }*/
-
-bool Function() {
-    if (Type()) {
-        if (word.name == "Token_Identifier") {
-            word = NextWord();
-            if (word.name == "Token_(") {
-                word = NextWord();
-                if (params()) {
-                    if (word.name == "Token_)") {
-                        word = NextWord();
-                        if (word.name == "Token_{") {
-                            word = NextWord();
-                            if (StmtList()) {
-                                if (word.name == "Token_}") {
-                                    word = NextWord();
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-bool Expresion() {}
-
-
-/*VarDecl' -> ;
-VarDecl' -> = Expression ;
+/*
+  VarDecl -> Type Identifier VarDecl'
 */
-bool VarDeclPrime() {
-    if (word.name == "Token_;") {
-        word = NextWord();
+bool Parser::VarDecl() {
+  if (Type()) {
+    if (currToken().name == "Token_ID") {
+      nextToken();
+      return VarDeclPrime();
     }
-    else if (word.name == "Token_=") {
-        word = NextWord();
-        if (Expresion()) {
-            if (word.name == "Token_;") {
-                word = NextWord();
-                return true;
-            }
-        }
-    }
+  }
+  return false;
 }
 
-
-/*VarDecl -> Type Identifier VarDecl'*/
-bool VarDecl(){
-    if (Type()) {
-        if (word.name == "Token_Identifier") {
-            word = NextWord();
-            if (VarDeclPrime()) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
-
-/*Declaration -> [ Function ]
-Declaration -> VarDecl
+/*
+  Declaration -> [ Function ]
+  Declaration -> VarDecl
 */
-bool Declaration() {
-    if (word.name == "Token_[") {
-        word = NextWord();
-        if (Function()) {
-            if (word.name == "Token_]") { word = NextWord(); return true; }
-            else return false;
-        }
+bool Parser::Declaration() {
+  if (currToken().name == "Token_[") {
+    nextToken();
+    if (Function()) {
+      if (currToken().name == "Token_]") {
+        nextToken();
+        return true;
+      }
+      else return false;
     }
     else if (VarDecl()) {
-        return true;
+      return true;
     }
-
-    return false;
-
+  }
+  return false;
 }
-/*Program' -> Declaration Program'
-Program' -> ''
+
+/*
+  Program' -> Declaration Program'
+  Program' -> ε
 */
-bool ProgramPrime() {
-    if (Declaration()) { 
-        if (ProgramPrime()) {
-            return true;
-        }   
+bool Parser::ProgramPrime() {
+  if (Declaration()) { 
+    return ProgramPrime();
+  }
+  return true;
+}
+
+/*
+  Program -> Declaration Program'
+*/
+bool Parser::Program() {
+  return Declaration() && ProgramPrime();
+}
+
+////////////////////////////////////////////////////////////
+
+/*
+  Params -> Type Identifier Params'
+*/
+bool Parser::Params() {
+  if (Type()) {
+    return ParamsPrime();
+  }
+  return true;
+}
+
+bool Parser::ParamsPrime() {
+  if (currToken().name == "Token_ID") {
+    nextToken();
+    if (currToken().name == "Token_,") {
+      nextToken();
+      return Params();
     }
     return true;
+  }
+  return false;
 }
 
-/*Program -> Declaration Program'
-*/
-bool Program() {
-    if(Declaration()) return ProgramPrime();
-    return false;
+bool Parser::CompoundStmt() {
+  if (currToken().name == "Token_{") {
+    nextToken();
+    if (StmtList()) {
+      if (currToken().name == "Token_}") {
+        nextToken();
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
-int main()
-{
-     word = NextWord();
-     Program();
+bool Parser::StmtList() {
+  while (Statement()) {
+  }
+  return true;
+}
 
+bool Parser::Statement() {
+  //return VarDecl() || IfStmt() || ForStmt() || ReturnStmt() || ExprStmt() || PrintStmt() || CompoundStmt();
+  return false;
 }
 

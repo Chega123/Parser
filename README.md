@@ -1,1 +1,15 @@
-aun falta pero pa ir presentando algo
+Program();
+ProgramPrime();
+Declaration();
+VarDecl();
+VarDeclPrime();
+Type();
+TypePrime();
+BasicType();
+Function();
+Params();
+ParamsPrime();
+CompoundStmt();
+StmtList();
+Statement();
+Expression();
