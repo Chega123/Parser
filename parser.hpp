@@ -33,9 +33,11 @@ private:
   bool BasicType();
   bool Function();
   bool Params();
-  bool ParamsPrime();
+  bool ParamList();
+  bool ParamListPrime();
   bool CompoundStmt();
   bool StmtList();
+  bool StmtListPrime();
   bool Statement();
   bool Expression();
 };

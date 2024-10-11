@@ -151,27 +151,73 @@ bool Parser::Program() {
 ////////////////////////////////////////////////////////////
 
 /*
-  Params -> Type Identifier Params'
+  Params -> ParamList
+  Params -> ε
 */
 bool Parser::Params() {
+  return ParamList() || true;
+}
+
+/*
+  ParamList -> Type Identifier ParamList'
+*/
+bool Parser::ParamList() {
   if (Type()) {
-    return ParamsPrime();
+    if (currToken().name == "Token_ID") {
+      nextToken();
+      return ParamListPrime();
+    }
+  }
+}
+
+/*
+  ParamList' -> , Type Identifier ParamList'
+  ParamList' -> ε
+*/
+bool Parser::ParamListPrime() {
+  if (currToken().name == "Token_,") {
+    nextToken();
+    if (Type()) {
+      if (currToken().name == "Token_ID") {
+        nextToken();
+        return ParamListPrime();
+      }
+    }
   }
   return true;
 }
 
-bool Parser::ParamsPrime() {
-  if (currToken().name == "Token_ID") {
-    nextToken();
-    if (currToken().name == "Token_,") {
-      nextToken();
-      return Params();
-    }
-    return true;
-  }
-  return false;
+/*
+  StmtList -> Statement StmtList'
+*/
+bool Parser::StmtList() {
+  return Statement() && StmtListPrime();
 }
 
+/*
+  StmtList' -> Statement StmtList'
+  StmtList' -> ε
+*/
+bool Parser::StmtListPrime() {
+  if (Statement()) {
+    return StmtListPrime();
+  }
+  return true;
+}
+
+/*
+  Statement -> VarDecl
+  Statement -> IfStmt
+  Statement -> ForStmt
+  Statement -> ReturnStmt
+  Statement -> ExprStmt
+  Statement -> PrintStmt
+  Statement -> { StmtList }
+*/
+
+/*
+  CompoundStmt -> { StmtList }
+*/
 bool Parser::CompoundStmt() {
   if (currToken().name == "Token_{") {
     nextToken();
@@ -183,12 +229,6 @@ bool Parser::CompoundStmt() {
     }
   }
   return false;
-}
-
-bool Parser::StmtList() {
-  while (Statement()) {
-  }
-  return true;
 }
 
 bool Parser::Statement() {
