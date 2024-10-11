@@ -15,12 +15,49 @@ int current_token = 0;
 token word;
 
 
-/*Function -> Type Identifier (Params) { StmtList }*/
+/*Type' -> [ ] Type'
+Type' -> ''
+*/
+bool TypePrime() {
+    if (word.name == "Token_[") {
+        word = NextWord();
+        if (word.name == "Token_]") {
+            word = NextWord();
+            if (TypePrime()) {
+                return true;
+            }
+        }
+    }
+    return true;
+}
 
-bool Type() {}
+/*BasicType -> IntType
+BasicType -> BoolType
+BasicType -> CharType
+BasicType -> StringType
+BasicType -> VoidType
+*/
+bool BasicType() {
+
+    if (word.name == "IntType"|| word.name == "IntType"|| word.name == "BoolType"|| word.name == "CharType"|| word.name == "StringType"|| word.name == "VoidType") {
+        return true;
+    }
+    return false;
+}
+
+/*Type->BasicType Type'*/
+
+bool Type() {
+    if (BasicType()) {
+        if (TypePrime()) {
+            return true;
+        }
+    }
+}
 bool params() {}
 bool StmtList() {}
 
+/*Function -> Type Identifier (Params) { StmtList }*/
 
 bool Function() {
     if (Type()) {
@@ -93,7 +130,7 @@ bool Declaration() {
         word = NextWord();
         if (Function()) {
             if (word.name == "Token_]") { word = NextWord(); return true; }
-            else return fail();
+            else return false;
         }
     }
     else if (VarDecl()) {
