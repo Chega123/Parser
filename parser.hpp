@@ -23,6 +23,7 @@ private:
   Token currToken();
   Token nextToken();
 
+  bool nonTerminal(std::string name);
   bool Program();
   bool ProgramPrime();
   bool Declaration();

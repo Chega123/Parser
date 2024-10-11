@@ -15,17 +15,21 @@ Token Parser::nextToken() {
   return tokens[current++];
 }
 
+bool Parser::nonTerminal(std::string name) {
+  if (currToken().name == name) {
+    nextToken();
+    return true;
+  }
+  return false;
+}
+
 /*
   Type' -> [ ] Type'
   Type' -> ε
 */
 bool Parser::TypePrime() {
-  if (currToken().name == "Token_[") {
-    nextToken();
-    if (currToken().name == "Token_]") {
-      nextToken();
-      return TypePrime();
-    }
+  if (nonTerminal("Token_[") && nonTerminal("Token_]") && TypePrime()) {
+    return true;
   }
   return true;
 }
@@ -38,10 +42,9 @@ bool Parser::TypePrime() {
   BasicType -> VoidType
 */
 bool Parser::BasicType() {
-  if (currToken().name == "IntType" || currToken().name == "BoolType" || 
-      currToken().name == "CharType" || currToken().name == "StringType" || 
-      currToken().name == "VoidType") {
-    nextToken();
+  if (nonTerminal("IntType") || nonTerminal("BoolType") || 
+      nonTerminal("CharType") || nonTerminal("StringType") || 
+      nonTerminal("VoidType")) {
     return true;
   }
   return false;
@@ -51,26 +54,23 @@ bool Parser::BasicType() {
   Type->BasicType Type'
 */
 bool Parser::Type() {
-  return BasicType() && TypePrime();
+  if (BasicType() && TypePrime()) {
+    return true;
+  }
+  return false;
 }
 
 /*
   Function -> Type Identifier (Params) { StmtList }
 */
 bool Parser::Function() {
-  if (Type()) {
-    if (currToken().name == "Token_ID") {
-      nextToken();
-      if (currToken().name == "Token_(") {
-        nextToken();
-        if (Params()) {
-          if (currToken().name == "Token_)") {
-            nextToken();
-            return CompoundStmt();
-          }
-        }
-      }
-    }
+  if (Type() && 
+      nonTerminal("Token_ID") && 
+      nonTerminal("Token_(") && 
+      Params() && 
+      nonTerminal("Token_)") && 
+      CompoundStmt()) {
+    return true;
   }
   return false;
 }
@@ -80,18 +80,11 @@ bool Parser::Function() {
   VarDecl' -> = Expression ;
 */
 bool Parser::VarDeclPrime() {
-  if (currToken().name == "Token_;") {
-    nextToken();
+  if (nonTerminal("Token_;")) {
     return true;
   }
-  else if (currToken().name == "Token_=") {
-    nextToken();
-    if (Expression()) {
-      if (currToken().name == "Token_;") {
-        nextToken();
-        return true;
-      }
-    }
+  else if (nonTerminal("Token_=") && Expression() && nonTerminal("Token_;")) {
+    return true;
   }
   return false;
 }
@@ -100,11 +93,8 @@ bool Parser::VarDeclPrime() {
   VarDecl -> Type Identifier VarDecl'
 */
 bool Parser::VarDecl() {
-  if (Type()) {
-    if (currToken().name == "Token_ID") {
-      nextToken();
-      return VarDeclPrime();
-    }
+  if (Type() && nonTerminal("Token_ID") && VarDeclPrime()) {
+    return true;
   }
   return false;
 }
@@ -114,18 +104,11 @@ bool Parser::VarDecl() {
   Declaration -> VarDecl
 */
 bool Parser::Declaration() {
-  if (currToken().name == "Token_[") {
-    nextToken();
-    if (Function()) {
-      if (currToken().name == "Token_]") {
-        nextToken();
-        return true;
-      }
-      else return false;
-    }
-    else if (VarDecl()) {
-      return true;
-    }
+  if (nonTerminal("Token_[") && Function() && nonTerminal("Token_]")) {
+    return true;
+  }
+  else if (VarDecl()) {
+    return true;
   }
   return false;
 }
@@ -135,8 +118,8 @@ bool Parser::Declaration() {
   Program' -> ε
 */
 bool Parser::ProgramPrime() {
-  if (Declaration()) { 
-    return ProgramPrime();
+  if (Declaration() && ProgramPrime()) {
+    return true;
   }
   return true;
 }
@@ -145,7 +128,10 @@ bool Parser::ProgramPrime() {
   Program -> Declaration Program'
 */
 bool Parser::Program() {
-  return Declaration() && ProgramPrime();
+  if (Declaration() && ProgramPrime()) {
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -155,19 +141,20 @@ bool Parser::Program() {
   Params -> ε
 */
 bool Parser::Params() {
-  return ParamList() || true;
+  if (ParamList()) {
+    return true;
+  }
+  return true;
 }
 
 /*
   ParamList -> Type Identifier ParamList'
 */
 bool Parser::ParamList() {
-  if (Type()) {
-    if (currToken().name == "Token_ID") {
-      nextToken();
-      return ParamListPrime();
-    }
+  if (Type() && nonTerminal("Token_ID") && ParamListPrime()) {
+    return true;
   }
+  return false;
 }
 
 /*
@@ -175,14 +162,8 @@ bool Parser::ParamList() {
   ParamList' -> ε
 */
 bool Parser::ParamListPrime() {
-  if (currToken().name == "Token_,") {
-    nextToken();
-    if (Type()) {
-      if (currToken().name == "Token_ID") {
-        nextToken();
-        return ParamListPrime();
-      }
-    }
+  if (nonTerminal("Token_,") && Type() && nonTerminal("Token_ID") && ParamListPrime()) {
+    return true;
   }
   return true;
 }
@@ -191,7 +172,10 @@ bool Parser::ParamListPrime() {
   StmtList -> Statement StmtList'
 */
 bool Parser::StmtList() {
-  return Statement() && StmtListPrime();
+  if (Statement() && StmtListPrime()) {
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -199,10 +183,20 @@ bool Parser::StmtList() {
   StmtList' -> ε
 */
 bool Parser::StmtListPrime() {
-  if (Statement()) {
-    return StmtListPrime();
+  if (Statement() && StmtListPrime()) {
+    return true;
   }
   return true;
+}
+
+/*
+  CompoundStmt -> { StmtList }
+*/
+bool Parser::CompoundStmt() {
+  if (nonTerminal("Token_{") && StmtList() && nonTerminal("Token_}")) {
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -214,23 +208,6 @@ bool Parser::StmtListPrime() {
   Statement -> PrintStmt
   Statement -> { StmtList }
 */
-
-/*
-  CompoundStmt -> { StmtList }
-*/
-bool Parser::CompoundStmt() {
-  if (currToken().name == "Token_{") {
-    nextToken();
-    if (StmtList()) {
-      if (currToken().name == "Token_}") {
-        nextToken();
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 bool Parser::Statement() {
   //return VarDecl() || IfStmt() || ForStmt() || ReturnStmt() || ExprStmt() || PrintStmt() || CompoundStmt();
   return false;
