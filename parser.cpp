@@ -118,10 +118,13 @@ bool Parser::Declaration() {
   Program' -> ε
 */
 bool Parser::ProgramPrime() {
-  if (Declaration() && ProgramPrime()) {
+    if (current >= tokens.size()) {
+        return true; 
+    }
+    if (Declaration() && ProgramPrime()) {
+        return true;
+    }
     return true;
-  }
-  return true;
 }
 
 /*
