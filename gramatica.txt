@@ -1,0 +1,182 @@
+Program ::= Declaration Program'
+
+Program' ::= Declaration Program'
+Program' ::= ''
+
+Declaration ::= [ Function ]
+Declaration ::= VarDecl
+
+Function ::= Type Identifier (Params) { StmtList }
+
+Type ::= BasicType Type'
+
+BasicType ::= IntType
+BasicType ::= BoolType
+BasicType ::= CharType
+BasicType ::= StringType
+BasicType ::= VoidType
+
+Type' ::= [ ] Type'
+Type' ::= ''
+
+Params ::= ParamList
+Params ::= ''
+
+ParamList ::= Type Identifier ParamList'
+
+ParamList' ::= , Type Identifier ParamList'
+ParamList' ::= ''
+
+VarDecl ::= Type Identifier VarDecl'
+
+VarDecl' ::= ;
+VarDecl' ::= = Expression ;
+
+
+
+StmtList ::= Statement StmtList'
+
+StmtList' ::= Statement StmtList'
+StmtList' ::= ''
+
+Statement ::= VarDecl
+Statement ::= IfStmt
+Statement ::= ForStmt
+Statement ::= ReturnStmt
+Statement ::= ExprStmt
+Statement ::= PrintStmt
+Statement ::= { StmtList }
+
+IfStmt ::= if ( Expression ) {Statement} AuxIf
+
+AuxIf ::= else {Statement}
+AuxIf ::= ‘’
+
+ForStmt ::= for ( ExprStmt Expression ; ) Statement
+
+ReturnStmt ::= return Expression ;
+
+PrintStmt ::= print ( ExprList ) ;
+
+ExprStmt ::= Expression ;
+ExprStmt ::= ;
+
+ExprList ::= Expression ExprList'
+
+ExprList' ::= , Expression ExprList'
+ExprList' ::= ''
+
+Expression ::= OrExpr AuxExpression 
+
+AuxExpression ::= = Expression
+AuxExpression ::= ''
+
+OrExpr ::= AndExpr OrExpr'
+
+OrExpr' ::= || AndExpr OrExpr'
+OrExpr' ::= ''
+
+AndExpr ::= EqExpr AndExpr'
+
+AndExpr' ::= && EqExpr AndExpr'
+AndExpr' ::= ''
+
+EqExpr ::= RelExpr EqExpr'
+
+EqExpr' ::= == RelExpr EqExpr'
+EqExpr' ::= != RelExpr EqExpr'
+EqExpr' ::= ''
+
+RelExpr ::= Expr RelExpr'
+
+RelExpr' ::= < Expr RelExpr'
+RelExpr' ::= > Expr RelExpr'
+RelExpr' ::= <= Expr RelExpr'
+RelExpr' ::= >= Expr RelExpr'
+RelExpr' ::= ''
+
+Expr ::= Term Expr'
+
+Expr' ::= + Term Expr'
+Expr' ::= - Term Expr'
+Expr' ::= ''
+
+Term ::= Unary Term'
+
+Term' ::= * Unary Term'
+Term' ::= / Unary Term'
+Term' ::= % Unary Term'
+Term' ::= ''
+
+Unary ::= ! Unary
+Unary ::= - Unary
+Unary ::= Factor
+
+Factor ::= Primary Factor'
+
+Factor' ::= [ Expression ] Factor'
+Factor' ::= ''
+
+Primary ::= Identifier auxPrimary
+Primary ::= IntegerLiteral
+Primary ::= CharLiteral
+Primary ::= StringLiteral
+Primary ::= BooleanLiteral
+Primary ::= ( Expression )
+
+auxPrimary ::= ( ExprList )
+auxPrimary ::= ''
+
+
+Expression ::= OrExpr AuxExpression
+AuxExpression ::= = Expression
+AuxExpression ::= ''
+
+OrExpr ::= AndExpr OrExpr'
+OrExpr' ::= || AndExpr OrExpr'
+OrExpr' ::= ''
+
+AndExpr ::= EqExpr AndExpr'
+AndExpr' ::= && EqExpr AndExpr'
+AndExpr' ::= ''
+
+EqExpr ::= RelExpr EqExpr'
+EqExpr' ::= == RelExpr EqExpr'
+EqExpr' ::= != RelExpr EqExpr'
+EqExpr' ::= ''
+
+RelExpr ::= AddExpr RelExpr'
+RelExpr' ::= < AddExpr RelExpr'
+RelExpr' ::= > AddExpr RelExpr'
+RelExpr' ::= <= AddExpr RelExpr'
+RelExpr' ::= >= AddExpr RelExpr'
+RelExpr' ::= ''
+
+AddExpr ::= Term AddExpr'
+AddExpr' ::= + Term AddExpr'
+AddExpr' ::= - Term AddExpr'
+AddExpr' ::= ''
+
+Term ::= Unary Term'
+Term' ::= * Unary Term'
+Term' ::= / Unary Term'
+Term' ::= % Unary Term'
+Term' ::= ''
+
+Unary ::= ! Unary
+Unary ::= - Unary
+Unary ::= Factor
+
+Factor ::= Primary Factor'
+Factor' ::= [ Expression ] Factor'
+Factor' ::= ''
+
+Primary ::= Identifier auxPrimary
+Primary ::= IntegerLiteral
+Primary ::= CharLiteral
+Primary ::= StringLiteral
+Primary ::= BooleanLiteral
+Primary ::= ( Expression )
+
+auxPrimary ::= ( ExprList )
+auxPrimary ::= ''
