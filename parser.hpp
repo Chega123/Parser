@@ -40,12 +40,9 @@ private:
   bool StmtList();
   bool StmtListPrime();
   bool Statement();
-  bool Expression();
-  bool VarDecl();
   bool IfStmt();
   bool ForStmt();
   bool AuxIf();
-  bool ForStmt();
   bool ReturnStmt();
   bool PrintStmt();
   bool ExprStmt();
