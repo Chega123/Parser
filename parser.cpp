@@ -1,4 +1,4 @@
-#include "Parser.hpp"
+#include "parser.hpp"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {
 }
@@ -204,7 +204,7 @@ ExprStmt ::= Expression ;
 ExprStmt ::= ;
 */
 bool Parser::ExprStmt(){
-  if(Expresion()&& nonTerminal("Token_;")){
+  if(Expression()&& nonTerminal("Token_;")){
     return true;
   }
   else if(nonTerminal("Token_;")){
@@ -353,7 +353,7 @@ bool Parser::Primary(){
 Factor' ::= [ Expression ] Factor'
 Factor' ::= ''
 */
-bool FactorPrime(){
+bool Parser::FactorPrime(){
   if (nonTerminal("Token_[")&&
       Expression()&&
       nonTerminal("Token_]")&&
@@ -366,7 +366,7 @@ bool FactorPrime(){
 /*
 Factor ::= Primary Factor'
 */
-bool Factor(){
+bool Parser::Factor(){
   if(Primary() && FactorPrime()){
     return true;
   }
@@ -395,7 +395,7 @@ bool Parser::TermPrime(){
   if ((nonTerminal("Token_*") || nonTerminal("Token_/") || nonTerminal("Token_%")) &&
       Unary() &&
       TermPrime()){
-    return true
+    return true;
   }
   return true;
 }
@@ -478,7 +478,7 @@ bool Parser::EqExprprime(){
 EqExpr ::= RelExpr EqExpr'
 */
 bool Parser::EqExpr(){
-  if(RelExpre() && EqExprprime()){
+  if(RelExpr() && EqExprprime()){
     return true;
   }
   return false;
